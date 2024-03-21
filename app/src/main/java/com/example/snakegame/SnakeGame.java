@@ -3,10 +3,13 @@ package com.example.snakegame;
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.graphics.Typeface;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.Image;
@@ -17,6 +20,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import java.io.IOException;
 import android.graphics.Rect;
+import androidx.core.content.res.ResourcesCompat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -49,6 +53,8 @@ class SnakeGame extends SurfaceView implements Runnable{
     private Canvas mCanvas;
     private SurfaceHolder mSurfaceHolder;
     private Paint mPaint;
+    private Bitmap mBackground;
+    private Typeface mCustomFont;
 
     // A snake ssss
     private Snake mSnake;
@@ -111,11 +117,19 @@ class SnakeGame extends SurfaceView implements Runnable{
                         mNumBlocksHigh),
                 blockSize);
 
+        //initialize for pause button
         int pauseButtonWidth = 100;
         int pauseButtonHeight = 100;
         int pauseButtonPadding = 30;
         pauseButton = new Rect(pauseButtonPadding, pauseButtonPadding, pauseButtonWidth + pauseButtonPadding, pauseButtonHeight + pauseButtonPadding);
 
+        //initialize for the background image
+        mBackground= BitmapFactory.decodeResource(context.getResources(), R.drawable.grass);
+        mBackground = Bitmap.createScaledBitmap(mBackground, size.x, size.y, false);
+
+        //initialize text font
+        mCustomFont = ResourcesCompat.getFont(context, R.font.cookie_crisp);
+        mPaint.setTypeface(mCustomFont);
     }
 
     // Called to start a new game
@@ -240,18 +254,20 @@ class SnakeGame extends SurfaceView implements Runnable{
         if (mSurfaceHolder.getSurface().isValid()) {
             mCanvas = mSurfaceHolder.lockCanvas();
 
-            // Fill the screen with a color
-            mCanvas.drawColor(Color.argb(255, 26, 128, 182));
+            //Added the background image
+            mCanvas.drawBitmap(mBackground, 0, 0, null);
 
-            // Set the size and color of the mPaint for the text
+
+            // Set the size, color, and font of the mPaint for the text
+            mPaint.setTypeface(mCustomFont);
             mPaint.setColor(Color.argb(255, 255, 255, 255));
             mPaint.setTextSize(120);
 
             // Draw the score
-            mCanvas.drawText("" + mScore, 140, 120, mPaint);
+            mCanvas.drawText("" + mScore, 150, 120, mPaint);
 
             // Draw the names of the students working on this assignment
-            mCanvas.drawText("Alexis Dawatan, Wei Chong", 1450, 120, mPaint);
+            mCanvas.drawText("Alexis Dawatan, Wei Chong", 1750, 120, mPaint);
 
             //Draw the pause button as a white square
             mPaint.setColor(Color.WHITE);
@@ -272,13 +288,6 @@ class SnakeGame extends SurfaceView implements Runnable{
                 // Set the size and color of the mPaint for the text
                 mPaint.setColor(Color.argb(255, 255, 255, 255));
                 mPaint.setTextSize(250);
-
-                // Draw the message
-                // We will give this an international upgrade soon
-                //mCanvas.drawText("Tap To Play!", 200, 700, mPaint);
-                /*mCanvas.drawText(getResources().
-                                getString(R.string.tap_to_play),
-                        200, 700, mPaint);*/
 
                 // Determine the message based on if game is paused or new game is created.
                 String message = isNewGame ? getResources().getString(R.string.tap_to_play) : "Game Paused";
