@@ -7,9 +7,9 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
-import android.graphics.Typeface;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
+import android.media.Image;
 import android.media.SoundPool;
 import android.os.Build;
 import android.view.MotionEvent;
@@ -17,6 +17,9 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import java.io.IOException;
 import android.graphics.Rect;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 class SnakeGame extends SurfaceView implements Runnable{
 
@@ -29,7 +32,6 @@ class SnakeGame extends SurfaceView implements Runnable{
     private volatile boolean mPaused = true;
     private boolean isNewGame = true;
     private Rect pauseButton;
-
 
     // for playing sound effects
     private SoundPool mSP;
@@ -52,8 +54,8 @@ class SnakeGame extends SurfaceView implements Runnable{
     private Snake mSnake;
     // And an apple
     private Apple mApple;
-
-
+    private List<Consumable> consumables = new ArrayList<>();
+    private int blockSize;
 
     // This is the constructor method that gets called
     // from SnakeActivity
@@ -61,7 +63,7 @@ class SnakeGame extends SurfaceView implements Runnable{
         super(context);
 
         // Work out how many pixels each block is
-        int blockSize = size.x / NUM_BLOCKS_WIDE;
+        blockSize = size.x / NUM_BLOCKS_WIDE;
         // How many blocks of the same size will fit into the height
         mNumBlocksHigh = size.y / blockSize;
 
@@ -122,8 +124,10 @@ class SnakeGame extends SurfaceView implements Runnable{
         // reset the snake
         mSnake.reset(NUM_BLOCKS_WIDE, mNumBlocksHigh);
 
+        consumables.clear();
         // Get the apple ready for dinner
         mApple.spawn();
+        consumables.add(mApple);
 
         // Reset the mScore
         mScore = 0;
@@ -182,18 +186,41 @@ class SnakeGame extends SurfaceView implements Runnable{
         // Move the snake
         mSnake.move();
 
-        // Did the head of the snake eat the apple?
-        if (mSnake.checkDinner(mApple.getLocation())) {
-            // This reminds me of Edge of Tomorrow.
-            // One day the apple will be ready!
-            mApple.spawn();
+        List<Consumable> consumedItems = new ArrayList<>();
+        List<Consumable> newItems = new ArrayList<>();
+        for (Consumable consumable : consumables) {
+            if (mSnake.checkDinner(consumable.getLocation())) {
 
-            // Add to  mScore
-            mScore = mScore + 1;
+                // adjust the score according to the value of the consumable
+                mScore += consumable.value;
+                mSP.play(mEat_ID, 1, 1, 0, 0, 1);
+                consumedItems.add(consumable);
 
-            // Play a sound
-            mSP.play(mEat_ID, 1, 1, 0, 0, 1);
+                if (consumable.value > 0) {
+                    for (int i = 0; i < consumable.value; i++) {
+                        mSnake.grow();
+                    }
+                } else if (consumable.value < 0) {
+                    for (int i = 0; i < Math.abs(consumable.value); i++) {
+                        mSnake.shrink();
+                    }
+                }
+
+                if (consumable instanceof Apple) {
+                    // Spawns a new apple
+                    Apple newApple = new Apple(getContext(), new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), blockSize);
+                    newApple.spawn();
+                    newItems.add(newApple);
+
+                    // Spawns a bad apple every time a "good" apple is consumed.
+                    BadApple badApple = new BadApple(getContext(), new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), blockSize);
+                    badApple.spawn();
+                    newItems.add(badApple);
+                }
+            }
         }
+        consumables.removeAll(consumedItems);
+        consumables.addAll(newItems);
 
         // Did the snake die?
         if (mSnake.detectDeath()) {
@@ -231,8 +258,13 @@ class SnakeGame extends SurfaceView implements Runnable{
             mCanvas.drawRect(pauseButton, mPaint);
 
             // Draw the apple and the snake
-            mApple.draw(mCanvas, mPaint);
+            // mApple.draw(mCanvas, mPaint);
             mSnake.draw(mCanvas, mPaint);
+
+            // Draw all the consumables
+            for (Consumable consumable : consumables) {
+                consumable.draw(mCanvas, mPaint);
+            }
 
             // Draw some text while paused
             if (mPaused) {

@@ -199,10 +199,20 @@ class Snake {
             // This is OK because on the next call to
             // move it will take the position of
             // the segment in front of it
-            segmentLocations.add(new Point(-10, -10));
+            // segmentLocations.add(new Point(-10, -10));
+            // ^ moved to the grow() method
             return true;
         }
         return false;
+    }
+
+    void grow(){
+        segmentLocations.add(new Point(-10, -10));
+    }
+    void shrink(){
+        if (segmentLocations.size() > 1) {
+            segmentLocations.remove(segmentLocations.size() - 1);
+        }
     }
 
     void draw(Canvas canvas, Paint paint) {
