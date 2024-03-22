@@ -41,6 +41,7 @@ class SnakeGame extends SurfaceView implements Runnable{
     private SoundPool mSP;
     private int mEat_ID = -1;
     private int mCrashID = -1;
+    private int mbadID = -1;
 
     // The size in segments of the playable area
     private final int NUM_BLOCKS_WIDE = 40;
@@ -98,6 +99,10 @@ class SnakeGame extends SurfaceView implements Runnable{
             descriptor = assetManager.openFd("snake_death.ogg");
             mCrashID = mSP.load(descriptor, 0);
 
+            descriptor = assetManager.openFd("get_bad.ogg");
+            mbadID = mSP.load(descriptor, 0);
+
+
         } catch (IOException e) {
             // Error
         }
@@ -110,7 +115,7 @@ class SnakeGame extends SurfaceView implements Runnable{
         mApple = new Apple(context,
                 new Point(NUM_BLOCKS_WIDE,
                         mNumBlocksHigh),
-                blockSize);
+                blockSize, mSP, mEat_ID);
 
         mSnake = new Snake(context,
                 new Point(NUM_BLOCKS_WIDE,
@@ -207,7 +212,8 @@ class SnakeGame extends SurfaceView implements Runnable{
 
                 // adjust the score according to the value of the consumable
                 mScore += consumable.value;
-                mSP.play(mEat_ID, 1, 1, 0, 0, 1);
+
+                consumable.playSound();
                 consumedItems.add(consumable);
 
                 if (consumable.value > 0) {
@@ -222,12 +228,12 @@ class SnakeGame extends SurfaceView implements Runnable{
 
                 if (consumable instanceof Apple) {
                     // Spawns a new apple
-                    Apple newApple = new Apple(getContext(), new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), blockSize);
+                    Apple newApple = new Apple(getContext(), new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), blockSize, mSP, mEat_ID);
                     newApple.spawn();
                     newItems.add(newApple);
 
                     // Spawns a bad apple every time a "good" apple is consumed.
-                    BadApple badApple = new BadApple(getContext(), new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), blockSize);
+                    BadApple badApple = new BadApple(getContext(), new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), blockSize, mSP, mbadID);
                     badApple.spawn();
                     newItems.add(badApple);
                 }
