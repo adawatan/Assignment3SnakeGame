@@ -53,10 +53,6 @@ class Snake {
         mBitmapHead = BitmapFactory.decodeResource(context.getResources(), R.drawable.head);
         mBitmapHead = Bitmap.createScaledBitmap(mBitmapHead, ss, ss, false);
 
-        // A matrix for scaling
-        Matrix matrix = new Matrix();
-        matrix.preScale(-1, 1);
-
         // Create and scale the body
         mBitmapBody = BitmapFactory.decodeResource(context.getResources(), R.drawable.body);
         mBitmapBody = Bitmap.createScaledBitmap(mBitmapBody, ss, ss, false);
@@ -187,7 +183,7 @@ class Snake {
                     break;
 
                 case LEFT:
-                    headBitmap = getRotatedBitmap(mBitmapHead, 90);
+                    headBitmap = getRotatedBitmap(mBitmapHead, 180);
                     break;
 
                 case UP:
@@ -195,9 +191,10 @@ class Snake {
                     break;
 
                 case DOWN:
-                    headBitmap = getRotatedBitmap(mBitmapHead, 180);
+                    headBitmap = getRotatedBitmap(mBitmapHead, 90);
                     break;
             }
+            System.out.println(heading);
             canvas.drawBitmap(headBitmap, segmentLocations.get(0).x * mSegmentSize, segmentLocations.get(0).y * mSegmentSize, paint);
 
             // Draw the snake body one block at a time
