@@ -259,49 +259,18 @@ class SnakeGame extends SurfaceView implements Runnable{
         // Get a lock on the mCanvas
         if (mSurfaceHolder.getSurface().isValid()) {
             mCanvas = mSurfaceHolder.lockCanvas();
-
             //Added the background image
-            mCanvas.drawBitmap(mBackground, 0, 0, null);
-
-
+            drawbackground(mCanvas);
             // Set the size, color, and font of the mPaint for the text
-            mPaint.setTypeface(mCustomFont);
-            mPaint.setColor(Color.argb(255, 255, 255, 255));
-            mPaint.setTextSize(120);
-
-            // Draw the score
-            mCanvas.drawText("" + mScore, 150, 120, mPaint);
-
-            // Draw the names of the students working on this assignment
-            mCanvas.drawText("Alexis Dawatan, Wei Chong", 1750, 120, mPaint);
-
+            drawSetText(mCanvas);
+            //Draw the score and names of students
+            drawScoreAndName(mCanvas);
             //Draw the pause button as a white square
-            mPaint.setColor(Color.WHITE);
-            mCanvas.drawRect(pauseButton, mPaint);
-
-            // Draw the apple and the snake
-            // mApple.draw(mCanvas, mPaint);
-            mSnake.draw(mCanvas, mPaint);
-
-            // Draw all the consumables
-            for (Consumable consumable : consumables) {
-                consumable.draw(mCanvas, mPaint);
-            }
-
+            drawPause(mCanvas);
+            //Draw the apple and snake
+            drawGameObjects(mCanvas);
             // Draw some text while paused
-            if (mPaused) {
-
-                // Set the size and color of the mPaint for the text
-                mPaint.setColor(Color.argb(255, 255, 255, 255));
-                mPaint.setTextSize(250);
-
-                // Determine the message based on if game is paused or new game is created.
-                String message = isNewGame ? getResources().getString(R.string.tap_to_play) : "Game Paused";
-
-                // Draw the message
-                mCanvas.drawText(message, 200, 700, mPaint);
-            }
-
+            drawPauseMessage(mCanvas);
             // Unlock the mCanvas and reveal the graphics for this frame
             mSurfaceHolder.unlockCanvasAndPost(mCanvas);
         }
@@ -350,5 +319,50 @@ class SnakeGame extends SurfaceView implements Runnable{
         mPlaying = true;
         mThread = new Thread(this);
         mThread.start();
+    }
+
+    private void drawbackground(Canvas canvas) {
+        canvas.drawBitmap(mBackground,0,0,null);
+    }
+
+    private void drawSetText(Canvas canvas){
+        mPaint.setTypeface(mCustomFont);
+        mPaint.setColor(Color.argb(255, 255, 255, 255));
+        mPaint.setTextSize(120);
+    }
+
+    private void drawScoreAndName(Canvas canvas) {
+        mCanvas.drawText("" + mScore, 150, 120, mPaint);
+        mCanvas.drawText("Alexis Dawatan, Wei Chong", 1750, 120, mPaint);
+    }
+
+    private void drawPause(Canvas canvas){
+        mPaint.setColor(Color.WHITE);
+        mCanvas.drawRect(pauseButton, mPaint);
+    }
+
+    private void drawGameObjects(Canvas canvas){
+        // Draw the apple and the snake
+        mSnake.draw(mCanvas, mPaint);
+
+        // Draw all the consumables
+        for (Consumable consumable : consumables) {
+            consumable.draw(mCanvas, mPaint);
+        }
+    }
+
+    private void drawPauseMessage(Canvas canvas) {
+        if (mPaused) {
+
+            // Set the size and color of the mPaint for the text
+            mPaint.setColor(Color.argb(255, 255, 255, 255));
+            mPaint.setTextSize(250);
+
+            // Determine the message based on if game is paused or new game is created.
+            String message = isNewGame ? getResources().getString(R.string.tap_to_play) : "Game Paused";
+
+            // Draw the message
+            mCanvas.drawText(message, 200, 700, mPaint);
+        }
     }
 }
