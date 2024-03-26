@@ -15,15 +15,15 @@ abstract class Consumable implements SoundEffect{
     protected int mSize;
     protected Context context;
     protected int value;
-    protected SoundPool mSP;
+    protected SoundManager soundManager;
 
-    public Consumable(Context context, Point spawnRange, int size, int value, SoundPool mSP) {
+    public Consumable(Context context, Point spawnRange, int size, int value, SoundManager soundManager ) {
         this.context = context;
         this.mSpawnRange = spawnRange;
         this.mSize = size;
         this.location.x = -10;
         this.value = value;
-        this.mSP = mSP;
+        this.soundManager = soundManager;
         loadBitmap();
         resizeBitmap();
     }

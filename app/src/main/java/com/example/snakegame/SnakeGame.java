@@ -38,11 +38,7 @@ class SnakeGame extends SurfaceView implements Runnable{
     private Rect pauseButton;
 
     // for playing sound effects
-    private SoundPool mSP;
-    private int mEat_ID = -1;
-    private int mCrashID = -1;
-    private int mbadID = -1;
-
+    private SoundManager soundManager;
     // The size in segments of the playable area
     private final int NUM_BLOCKS_WIDE = 40;
     private int mNumBlocksHigh;
@@ -68,73 +64,21 @@ class SnakeGame extends SurfaceView implements Runnable{
     // from SnakeActivity
     public SnakeGame(Context context, Point size) {
         super(context);
-
         // Work out how many pixels each block is
-        blockSize = size.x / NUM_BLOCKS_WIDE;
         // How many blocks of the same size will fit into the height
-        mNumBlocksHigh = size.y / blockSize;
-
-        // Initialize the SoundPool
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            AudioAttributes audioAttributes = new AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_MEDIA)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                    .build();
-
-            mSP = new SoundPool.Builder()
-                    .setMaxStreams(5)
-                    .setAudioAttributes(audioAttributes)
-                    .build();
-        } else {
-            mSP = new SoundPool(5, AudioManager.STREAM_MUSIC, 0);
-        }
-        try {
-            AssetManager assetManager = context.getAssets();
-            AssetFileDescriptor descriptor;
-
-            // Prepare the sounds in memory
-            descriptor = assetManager.openFd("get_apple.ogg");
-            mEat_ID = mSP.load(descriptor, 0);
-
-            descriptor = assetManager.openFd("snake_death.ogg");
-            mCrashID = mSP.load(descriptor, 0);
-
-            descriptor = assetManager.openFd("get_bad.ogg");
-            mbadID = mSP.load(descriptor, 0);
-
-
-        } catch (IOException e) {
-            // Error
-        }
-
+        initializeScreen(size);
+        //Initialize the SoundPool
+        soundManager = new SoundManager(context);
         // Initialize the drawing objects
-        mSurfaceHolder = getHolder();
-        mPaint = new Paint();
-
+        initializeDrawObjects();
         // Call the constructors of our two game objects
-        mApple = new Apple(context,
-                new Point(NUM_BLOCKS_WIDE,
-                        mNumBlocksHigh),
-                blockSize, mSP, mEat_ID);
-
-        mSnake = new Snake(context,
-                new Point(NUM_BLOCKS_WIDE,
-                        mNumBlocksHigh),
-                blockSize);
-
+        callConstructorObjects(context);
         //initialize for pause button
-        int pauseButtonWidth = 100;
-        int pauseButtonHeight = 100;
-        int pauseButtonPadding = 30;
-        pauseButton = new Rect(pauseButtonPadding, pauseButtonPadding, pauseButtonWidth + pauseButtonPadding, pauseButtonHeight + pauseButtonPadding);
-
+        initializePauseButton();
         //initialize for the background image
-        mBackground= BitmapFactory.decodeResource(context.getResources(), R.drawable.grass);
-        mBackground = Bitmap.createScaledBitmap(mBackground, size.x, size.y, false);
-
+        initializeBackGroundImage(context,size);
         //initialize text font
-        mCustomFont = ResourcesCompat.getFont(context, R.font.cookie_crisp);
-        mPaint.setTypeface(mCustomFont);
+        initializeTextFont(context);
     }
 
     // Called to start a new game
@@ -228,12 +172,12 @@ class SnakeGame extends SurfaceView implements Runnable{
 
                 if (consumable instanceof Apple) {
                     // Spawns a new apple
-                    Apple newApple = new Apple(getContext(), new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), blockSize, mSP, mEat_ID);
+                    Apple newApple = new Apple(getContext(), new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), blockSize, soundManager);
                     newApple.spawn();
                     newItems.add(newApple);
 
                     // Spawns a bad apple every time a "good" apple is consumed.
-                    BadApple badApple = new BadApple(getContext(), new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), blockSize, mSP, mbadID);
+                    BadApple badApple = new BadApple(getContext(), new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), blockSize, soundManager);
                     badApple.spawn();
                     newItems.add(badApple);
                 }
@@ -245,7 +189,7 @@ class SnakeGame extends SurfaceView implements Runnable{
         // Did the snake die?
         if (mSnake.detectDeath()) {
             // Pause the game ready to start again
-            mSP.play(mCrashID, 1, 1, 0, 0, 1);
+            soundManager.playDeathSound();
 
             mPaused = true;
             isNewGame = true;
@@ -364,5 +308,47 @@ class SnakeGame extends SurfaceView implements Runnable{
             // Draw the message
             mCanvas.drawText(message, 200, 700, mPaint);
         }
+    }
+
+    //Initialize methods
+    private void initializeScreen(Point size){
+        // Work out how many pixels each block is
+        blockSize = size.x / NUM_BLOCKS_WIDE;
+        // How many blocks of the same size will fit into the height
+        mNumBlocksHigh = size.y / blockSize;
+    }
+
+    private void initializeDrawObjects(){
+        mSurfaceHolder = getHolder();
+        mPaint = new Paint();
+    }
+
+    private void initializePauseButton(){
+        int pauseButtonWidth = 100;
+        int pauseButtonHeight = 100;
+        int pauseButtonPadding = 30;
+        pauseButton = new Rect(pauseButtonPadding, pauseButtonPadding, pauseButtonWidth + pauseButtonPadding, pauseButtonHeight + pauseButtonPadding);
+    }
+
+    private void initializeBackGroundImage(Context context, Point size){
+        mBackground= BitmapFactory.decodeResource(context.getResources(), R.drawable.grass);
+        mBackground = Bitmap.createScaledBitmap(mBackground, size.x, size.y, false);
+    }
+
+    private void initializeTextFont(Context context){
+        mCustomFont = ResourcesCompat.getFont(context, R.font.cookie_crisp);
+        mPaint.setTypeface(mCustomFont);
+    }
+
+    private void callConstructorObjects(Context context){
+        mApple = new Apple(context,
+                new Point(NUM_BLOCKS_WIDE,
+                        mNumBlocksHigh),
+                blockSize, soundManager);
+
+        mSnake = new Snake(context,
+                new Point(NUM_BLOCKS_WIDE,
+                        mNumBlocksHigh),
+                blockSize);
     }
 }

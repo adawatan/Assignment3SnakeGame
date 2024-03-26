@@ -7,11 +7,9 @@ import android.media.SoundPool;
 
 class BadApple extends Consumable {
 
-    protected int mbadID;
+    public BadApple(Context context, Point spawnRange, int size, SoundManager soundManager) {
+        super(context, spawnRange, size, -1,soundManager);
 
-    public BadApple(Context context, Point spawnRange, int size, SoundPool mSP, int mbadID) {
-        super(context, spawnRange, size, -1, mSP);
-        this.mbadID = mbadID;
     }
 
     @Override
@@ -21,6 +19,6 @@ class BadApple extends Consumable {
 
     @Override
     public void playSound() {
-        mSP.play(mbadID, 1, 1, 0, 0, 1);
+        soundManager.playBadSound();
     }
 }
