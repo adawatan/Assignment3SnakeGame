@@ -8,6 +8,8 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.view.MotionEvent;
+import java.util.List;
+
 
 import java.util.ArrayList;
 
@@ -119,7 +121,7 @@ class Snake {
 
     }
 
-    boolean detectDeath() {
+    boolean detectDeath(List<Obstacle> obstacles) {
         // Has the snake died?
         boolean dead = false;
 
@@ -141,6 +143,12 @@ class Snake {
                 dead = true;
             }
         }
+        for (Obstacle obstacle : obstacles) {
+            if (segmentLocations.get(0).equals(obstacle.getLocation())) {
+                dead = true; // Collided with an obstacle
+            }
+        }
+
         return dead;
     }
 
@@ -243,5 +251,8 @@ class Snake {
                     break;
             }
         }
+    }
+    public List<Point> getSegmentLocations() {
+        return new ArrayList<>(segmentLocations);  // Return a copy to prevent external modifications
     }
 }
