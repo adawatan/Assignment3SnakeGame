@@ -3,7 +3,6 @@ package com.example.snakegame;
 import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
-import android.media.SoundPool;
 
 class BadApple extends Consumable {
 

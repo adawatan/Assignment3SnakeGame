@@ -24,6 +24,7 @@ class Snake {
     // How big is the entire grid
     private Point mMoveRange;
 
+    private boolean isInvulnerable = false;
     // Where is the centre of the screen
     // horizontally in pixels?
     private int halfWayPoint;
@@ -40,6 +41,11 @@ class Snake {
 
     // A bitmap for the body
     private Bitmap mBitmapBody;
+
+    private Bitmap mBitmapHeadGolden;
+    private Bitmap mBitmapBodyGolden;
+
+    private boolean isGolden = false;
 
     Snake(Context context, Point mr, int ss) {
 
@@ -58,6 +64,12 @@ class Snake {
         // Create and scale the body
         mBitmapBody = BitmapFactory.decodeResource(context.getResources(), R.drawable.body);
         mBitmapBody = Bitmap.createScaledBitmap(mBitmapBody, ss, ss, false);
+
+        mBitmapHeadGolden = BitmapFactory.decodeResource(context.getResources(), R.drawable.goldhead);
+        mBitmapHeadGolden = Bitmap.createScaledBitmap(mBitmapHeadGolden, ss, ss, false);
+
+        mBitmapBodyGolden = BitmapFactory.decodeResource(context.getResources(), R.drawable.goldbody);
+        mBitmapBodyGolden = Bitmap.createScaledBitmap(mBitmapBodyGolden, ss, ss, false);
 
         // The halfway point across the screen in pixels
         // Used to detect which side of screen was pressed
@@ -121,10 +133,13 @@ class Snake {
 
     }
 
+    public void setInvulnerable(boolean invulnerable) {
+        this.isInvulnerable = invulnerable;
+    }
+
     boolean detectDeath(List<Obstacle> obstacles) {
         // Has the snake died?
         boolean dead = false;
-
         // Hit any of the screen edges
         if (segmentLocations.get(0).x == -1 ||
                 segmentLocations.get(0).x > mMoveRange.x ||
@@ -143,9 +158,13 @@ class Snake {
                 dead = true;
             }
         }
-        for (Obstacle obstacle : obstacles) {
-            if (segmentLocations.get(0).equals(obstacle.getLocation())) {
-                dead = true; // Collided with an obstacle
+        if (isInvulnerable) {
+            obstacles.removeIf(obstacle -> segmentLocations.get(0).equals(obstacle.getLocation()));
+        } else {
+            for (Obstacle obstacle : obstacles) {
+                if (segmentLocations.get(0).equals(obstacle.getLocation())) {
+                    dead = true;
+                }
             }
         }
 
@@ -177,6 +196,13 @@ class Snake {
             segmentLocations.remove(segmentLocations.size() - 1);
         }
     }
+    void turnGolden() {
+        isGolden = true;
+    }
+
+    void revertToNormal() {
+        isGolden = false;
+    }
 
     void draw(Canvas canvas, Paint paint) {
 
@@ -184,30 +210,31 @@ class Snake {
         if (!segmentLocations.isEmpty()) {
             // All the code from this method goes here
             // Draw the head
-            Bitmap headBitmap = mBitmapHead;
+            Bitmap headBitmap = isGolden ? mBitmapHeadGolden : mBitmapHead;
             switch (heading) {
                 case RIGHT:
                     // dont need to rotate because default heading is already right
                     break;
 
                 case LEFT:
-                    headBitmap = getRotatedBitmap(mBitmapHead, 180);
+                    headBitmap = getRotatedBitmap(headBitmap, 180);
                     break;
 
                 case UP:
-                    headBitmap = getRotatedBitmap(mBitmapHead, -90);
+                    headBitmap = getRotatedBitmap(headBitmap, -90);
                     break;
 
                 case DOWN:
-                    headBitmap = getRotatedBitmap(mBitmapHead, 90);
+                    headBitmap = getRotatedBitmap(headBitmap, 90);
                     break;
             }
             System.out.println(heading);
             canvas.drawBitmap(headBitmap, segmentLocations.get(0).x * mSegmentSize, segmentLocations.get(0).y * mSegmentSize, paint);
 
+            Bitmap mBitBody = isGolden ? mBitmapBodyGolden : mBitmapBody;
             // Draw the snake body one block at a time
             for (int i = 1; i < segmentLocations.size(); i++) {
-                canvas.drawBitmap(mBitmapBody, segmentLocations.get(i).x * mSegmentSize, segmentLocations.get(i).y * mSegmentSize, paint);
+                canvas.drawBitmap(mBitBody, segmentLocations.get(i).x * mSegmentSize, segmentLocations.get(i).y * mSegmentSize, paint);
             }
         }
     }
@@ -255,4 +282,8 @@ class Snake {
     public List<Point> getSegmentLocations() {
         return new ArrayList<>(segmentLocations);  // Return a copy to prevent external modifications
     }
+    public boolean isGolden() {
+        return isGolden;
+    }
+
 }

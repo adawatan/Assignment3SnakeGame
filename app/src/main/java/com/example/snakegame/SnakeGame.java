@@ -8,13 +8,14 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Typeface;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.graphics.Rect;
 import androidx.core.content.res.ResourcesCompat;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 class SnakeGame extends SurfaceView implements Runnable{
@@ -37,7 +38,6 @@ class SnakeGame extends SurfaceView implements Runnable{
 
     // How many points does the player have
     private int mScore;
-
     // Objects for drawing
     private Canvas mCanvas;
     private SurfaceHolder mSurfaceHolder;
@@ -49,9 +49,11 @@ class SnakeGame extends SurfaceView implements Runnable{
     private Snake mSnake;
     // And an apple
     private Apple mApple;
+    private boolean hasApple = false;
+    private boolean hasGoldenApple = false;
+
     private List<Consumable> consumables = new ArrayList<>();
     private List<Obstacle> obstacles = new ArrayList<>();
-    private List<Point> occupiedLocations = new ArrayList<>();
     private int blockSize;
 
     // This is the constructor method that gets called
@@ -135,10 +137,11 @@ class SnakeGame extends SurfaceView implements Runnable{
         mSnake.reset(NUM_BLOCKS_WIDE, mNumBlocksHigh);
         obstacles.clear();
         consumables.clear();
+        hasApple = false;
         // Get the apple ready for dinner
         mApple.spawn();
         consumables.add(mApple);
-
+        scheduleGoldenAppleSpawn();
         // Reset the mScore
         mScore = 0;
 
@@ -195,28 +198,38 @@ class SnakeGame extends SurfaceView implements Runnable{
         // Move the snake
         mSnake.move();
 
-        Iterator<Consumable> iterator = consumables.iterator();
+        List<Consumable> toRemove = new ArrayList<>();
         boolean consumedApple = false;
 
-        while (iterator.hasNext()) {
-            Consumable consumable = iterator.next();
+        for (Consumable consumable : consumables) {
             if (mSnake.checkDinner(consumable.getLocation())) {
-                mScore += consumable.value;
                 consumable.playSound();
-                iterator.remove(); // Remove the consumable using the iterator
+                toRemove.add(consumable);
 
-                if (consumable instanceof Apple) {
-                    spawnObstacle(1);
+                if (consumable instanceof BadApple) {
+                    if (!mSnake.isGolden()) {
+                        mSnake.shrink();
+                        mScore += consumable.value;
+                        spawnObstacle(2);
+                    }
+                } else if (consumable instanceof Apple) {
+                    mScore += consumable.value;
+                    adjustSnakeSize(consumable.value);
+                    hasApple = false;
                     consumedApple = true;
-                } else if (consumable instanceof BadApple) {
-                    spawnObstacle(2);
+                } else if (consumable instanceof GoldenApple) {
+                    ((GoldenApple) consumable).activateEffects(mSnake);
+                    hasGoldenApple = false;
                 }
-                adjustSnakeSize(consumable.value);
             }
         }
-        if (consumedApple) {
+
+        consumables.removeAll(toRemove);
+        if (consumedApple && !hasApple) {
             spawnNewApples();
+            spawnObstacle(1);
         }
+
         checkSnakeDeath();
     }
     private void adjustSnakeSize(int value) {
@@ -246,16 +259,30 @@ class SnakeGame extends SurfaceView implements Runnable{
     }
 
     private void spawnNewApples() {
-        Apple newApple = new Apple(getContext(), new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), blockSize, soundManager);
-        newApple.spawn();
-        consumables.add(newApple);
+        if (!hasApple) {
+            Apple newApple = new Apple(getContext(), new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), blockSize, soundManager);
+            newApple.spawn();
+            consumables.add(newApple);
+            hasApple = true;
+        }
 
-        // Optionally spawn a bad apple
         BadApple badApple = new BadApple(getContext(), new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), blockSize, soundManager);
         badApple.spawn();
         consumables.add(badApple);
     }
 
+    private void scheduleGoldenAppleSpawn() {
+        Handler mainHandler = new Handler(Looper.getMainLooper());
+        mainHandler.postDelayed(() -> {
+            if (mPlaying && !mPaused && !hasGoldenApple) {
+                GoldenApple goldenApple = new GoldenApple(getContext(), new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), blockSize, soundManager);
+                goldenApple.spawn();
+                consumables.add(goldenApple);
+                hasGoldenApple = true;
+                scheduleGoldenAppleSpawn();
+            }
+        }, 30000); // adjust the timing as needed for gameplay balance
+    }
     // Do all the drawing
     public void draw() {
         // Get a lock on the mCanvas
@@ -298,15 +325,15 @@ class SnakeGame extends SurfaceView implements Runnable{
     }
 
     private void drawGameObjects(Canvas canvas){
-        // Draw the apple and the snake
-        mSnake.draw(mCanvas, mPaint);
+        // Draw the snake
+        mSnake.draw(canvas, mPaint);
 
-        // Draw all the consumables
         for (Consumable consumable : consumables) {
-            consumable.draw(mCanvas, mPaint);
+            consumable.draw(canvas, mPaint);
         }
+
         for (Obstacle obstacle : obstacles) {
-            obstacle.draw(mCanvas, mPaint);
+            obstacle.draw(canvas, mPaint);
         }
     }
 
