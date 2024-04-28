@@ -38,6 +38,10 @@ class SnakeGame extends SurfaceView implements Runnable{
 
     // How many points does the player have
     private int mScore;
+
+    private HighScoreManager highScoreManager;
+
+
     // Objects for drawing
     private Canvas mCanvas;
     private SurfaceHolder mSurfaceHolder;
@@ -76,6 +80,9 @@ class SnakeGame extends SurfaceView implements Runnable{
         //initialize text font
         initializeTextFont(context);
         initializeObstacles(context);
+
+        // Initialize the high score manager
+        highScoreManager = new HighScoreManager();
     }
 
     //Initialize methods
@@ -248,6 +255,10 @@ class SnakeGame extends SurfaceView implements Runnable{
             soundManager.playDeathSound();
             mPaused = true;
             isNewGame = true;
+
+            // Whenever the player achieves a new high score, update the high score in the HighScoreManager
+            //int playerScore = calculateScore(); // Example method to calculate player's score
+            //highScoreManager.setHighScore(playerScore);
         }
     }
     private void spawnObstacle(int count) {
