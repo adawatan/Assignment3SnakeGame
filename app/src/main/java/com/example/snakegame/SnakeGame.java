@@ -39,7 +39,7 @@ class SnakeGame extends SurfaceView implements Runnable{
     // How many points does the player have
     private int mScore;
 
-    private HighScoreManager highScoreManager;
+    private ScoreManager highScoreManager;
 
 
     // Objects for drawing
@@ -82,7 +82,7 @@ class SnakeGame extends SurfaceView implements Runnable{
         initializeObstacles(context);
 
         // Initialize the high score manager
-        highScoreManager = new HighScoreManager();
+        highScoreManager = new ScoreManager();
     }
 
     //Initialize methods
