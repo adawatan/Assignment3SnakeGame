@@ -223,8 +223,8 @@ class SnakeGame extends SurfaceView implements Runnable{
                     hasApple = false;
                     consumedApple = true;
                   
-                } else if (consumable instanceof GoldenApple) {
-                    ((GoldenApple) consumable).activateEffects(mSnake);
+                } else if (consumable instanceof GoldenFish) {
+                    ((GoldenFish) consumable).activateEffects(mSnake);
                     obstacles.clear();
                     hasGoldenApple = false;
                 }
