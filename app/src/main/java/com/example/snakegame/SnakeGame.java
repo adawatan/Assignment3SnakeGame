@@ -44,6 +44,7 @@ class SnakeGame extends SurfaceView implements Runnable{
     private Paint mPaint;
     private Bitmap mBackground;
     private Typeface mCustomFont;
+    private HighScoreManager highScoreManager;
 
     // A snake ssss
     private Snake mSnake;
@@ -77,6 +78,7 @@ class SnakeGame extends SurfaceView implements Runnable{
         //initialize text font
         initializeTextFont(context);
         initializeObstacles(context);
+        highScoreManager = new HighScoreManager(context);
     }
 
     //Initialize methods
@@ -93,14 +95,14 @@ class SnakeGame extends SurfaceView implements Runnable{
     }
 
     private void initializePauseButton(){
-        int pauseButtonWidth = 100;
-        int pauseButtonHeight = 100;
+        int pauseButtonWidth = 2170;
+        int pauseButtonHeight = 900;
         int pauseButtonPadding = 30;
-        pauseButton = new Rect(pauseButtonPadding, pauseButtonPadding, pauseButtonWidth + pauseButtonPadding, pauseButtonHeight + pauseButtonPadding);
+        pauseButton = new Rect(2140, 870, pauseButtonWidth + pauseButtonPadding, pauseButtonHeight + pauseButtonPadding);
     }
 
     private void initializeBackGroundImage(Context context, Point size){
-        mBackground= BitmapFactory.decodeResource(context.getResources(), R.drawable.bg2);
+        mBackground= BitmapFactory.decodeResource(context.getResources(), R.drawable.bg);
         mBackground = Bitmap.createScaledBitmap(mBackground, size.x, size.y, false);
     }
 
@@ -214,11 +216,16 @@ class SnakeGame extends SurfaceView implements Runnable{
                     }
                 } else if (consumable instanceof Apple) {
                     mScore += consumable.value;
+                    if(highScoreManager.getHighScore() < mScore){
+                        highScoreManager.saveHighScore(mScore);
+                    }
                     adjustSnakeSize(consumable.value);
                     hasApple = false;
                     consumedApple = true;
-                } else if (consumable instanceof GoldenFish) {
-                    ((GoldenFish) consumable).activateEffects(mSnake);
+                  
+                } else if (consumable instanceof GoldenApple) {
+                    ((GoldenApple) consumable).activateEffects(mSnake);
+                    obstacles.clear();
                     hasGoldenApple = false;
                 }
             }
@@ -300,6 +307,13 @@ class SnakeGame extends SurfaceView implements Runnable{
             drawGameObjects(mCanvas);
             // Draw some text while paused
             drawPauseMessage(mCanvas);
+            // Draw the highscore
+            drawHighscore(mCanvas);
+
+
+
+
+
             // Unlock the mCanvas and reveal the graphics for this frame
             mSurfaceHolder.unlockCanvasAndPost(mCanvas);
         }
@@ -309,6 +323,16 @@ class SnakeGame extends SurfaceView implements Runnable{
         canvas.drawBitmap(mBackground,0,0,null);
     }
 
+    private void drawHighscore(Canvas canvas){
+        // Set the color and font size for the paint
+        Paint hpaint = new Paint();
+        hpaint.setColor(Color.WHITE);
+        hpaint.setTextSize(40);
+
+        // Draw the current high score
+        int highScore = highScoreManager.getHighScore();
+        canvas.drawText("HS: " + highScore, 10, 930, hpaint);
+    }
     private void drawSetText(Canvas canvas){
         mPaint.setTypeface(mCustomFont);
         mPaint.setColor(Color.argb(255, 255, 255, 255));
@@ -316,7 +340,7 @@ class SnakeGame extends SurfaceView implements Runnable{
     }
 
     private void drawScoreAndName(Canvas canvas) {
-        mCanvas.drawText("" + mScore, 150, 120, mPaint);
+        mCanvas.drawText("" + mScore, 25, 870, mPaint);
     }
 
     private void drawPause(Canvas canvas){
@@ -348,7 +372,7 @@ class SnakeGame extends SurfaceView implements Runnable{
             String message = isNewGame ? getResources().getString(R.string.tap_to_play) : "Game Paused";
 
             // Draw the message
-            mCanvas.drawText(message, 200, 700, mPaint);
+            mCanvas.drawText(message, 500, 500, mPaint);
         }
     }
     @Override

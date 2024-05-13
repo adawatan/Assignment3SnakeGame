@@ -9,6 +9,7 @@ public class SnakeActivity extends Activity {
 
     // Declare an instance of SnakeGame
     SnakeGame mSnakeGame;
+    private HighScoreManager highScoreManager;
 
     // Set the game up
     @Override
@@ -27,6 +28,15 @@ public class SnakeActivity extends Activity {
 
         // Make snakeEngine the view of the Activity
         setContentView(mSnakeGame);
+
+        highScoreManager = new HighScoreManager(this);
+        int highScore = highScoreManager.getHighScore();
+        // Display or use the high score as needed
+    }
+
+    public void updateHighScore(int newScore) {
+        highScoreManager.saveHighScore(newScore);
+        // Update the UI or notify the player of the new high score
     }
 
     // Start the thread in snakeEngine
