@@ -6,11 +6,19 @@ import android.content.SharedPreferences;
 
 
 public class HighScoreManager {
+        private static HighScoreManager instance; // Singleton instance
         private SharedPreferences prefs;
         private static final String HIGH_SCORE_KEY = "high_score_key";
 
         public HighScoreManager(Context context) {
             prefs = context.getSharedPreferences("game_prefs", Context.MODE_PRIVATE);
+        }
+
+        public static synchronized HighScoreManager getInstance(Context context) {
+            if (instance == null) {
+             instance = new HighScoreManager(context);
+            }
+            return instance;
         }
 
         public int getHighScore() {

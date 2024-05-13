@@ -33,7 +33,7 @@ class SnakeGame extends SurfaceView implements Runnable{
     // for playing sound effects
     private SoundManager soundManager;
     // The size in segments of the playable area
-    private int NUM_BLOCKS_WIDE = 40;
+    private int NUM_BLOCKS_WIDE = 30;
     private int mNumBlocksHigh;
 
     // How many points does the player have
@@ -213,9 +213,16 @@ class SnakeGame extends SurfaceView implements Runnable{
                         mSnake.shrink();
                         mScore += consumable.value;
                         spawnObstacle(2);
+                    }else{
+                        mScore += 1;
                     }
                 } else if (consumable instanceof Apple) {
-                    mScore += consumable.value;
+                    if (!mSnake.isGolden()){
+                        mScore += consumable.value;
+                    }else{
+                        mScore += (consumable.value * 2);
+                    }
+
                     if(highScoreManager.getHighScore() < mScore){
                         highScoreManager.saveHighScore(mScore);
                     }
@@ -225,6 +232,7 @@ class SnakeGame extends SurfaceView implements Runnable{
                   
                 } else if (consumable instanceof GoldenFish) {
                     ((GoldenFish) consumable).activateEffects(mSnake);
+                    mScore += 10;
                     obstacles.clear();
                     hasGoldenApple = false;
                 }
