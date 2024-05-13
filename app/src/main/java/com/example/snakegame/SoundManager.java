@@ -5,11 +5,13 @@ import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.media.SoundPool;
 import java.io.IOException;
 
 public class SoundManager {
     private SoundPool mSP;
+    private MediaPlayer mMediaPlayer;
     private int mEat_ID;
     private int mCrashID;
     private int mbadID;
@@ -30,6 +32,8 @@ public class SoundManager {
         }
 
         loadSounds(context);
+
+        loadBackgroundMusic(context);
     }
 
     private void loadSounds(Context context){
@@ -50,6 +54,30 @@ public class SoundManager {
 
         } catch (IOException e) {
             // Error
+        }
+    }
+    private void loadBackgroundMusic(Context context) {
+        try {
+            AssetFileDescriptor afd = context.getAssets().openFd("background.ogg");
+            mMediaPlayer = new MediaPlayer();
+            mMediaPlayer.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(), afd.getLength());
+            mMediaPlayer.prepare();
+            mMediaPlayer.setLooping(true);
+            mMediaPlayer.setVolume(1.0f, 1.0f);
+        } catch (IOException e) {
+            // Handle errors
+        }
+    }
+
+    public void playBackgroundMusic() {
+        if (mMediaPlayer != null && !mMediaPlayer.isPlaying()) {
+            mMediaPlayer.start();
+        }
+    }
+
+    public void pauseBackgroundMusic() {
+        if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
+            mMediaPlayer.pause();
         }
     }
 

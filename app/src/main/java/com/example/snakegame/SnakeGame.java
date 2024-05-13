@@ -56,6 +56,7 @@ class SnakeGame extends SurfaceView implements Runnable{
     private List<Obstacle> obstacles = new ArrayList<>();
     private int blockSize;
 
+
     // This is the constructor method that gets called
     // from SnakeActivity
     public SnakeGame(Context context, Point size) {
@@ -138,18 +139,17 @@ class SnakeGame extends SurfaceView implements Runnable{
         obstacles.clear();
         consumables.clear();
         hasApple = false;
+        hasGoldenApple = false;
         // Get the apple ready for dinner
         mApple.spawn();
         consumables.add(mApple);
-        scheduleGoldenAppleSpawn();
         // Reset the mScore
         mScore = 0;
-
         // Setup mNextFrameTime so an update can triggered
         mNextFrameTime = System.currentTimeMillis();
-
         isNewGame = true;
         obstacles.forEach(obstacle -> obstacle.spawnObstacle(new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), mSnake.getSegmentLocations(), getConsumableLocations()));
+        scheduleGoldenAppleSpawn();
     }
 
 
@@ -281,7 +281,7 @@ class SnakeGame extends SurfaceView implements Runnable{
                 hasGoldenApple = true;
                 scheduleGoldenAppleSpawn();
             }
-        }, 30000); // adjust the timing as needed for gameplay balance
+        }, 20000); // adjust the timing as needed for gameplay balance
     }
     // Do all the drawing
     public void draw() {
@@ -362,6 +362,11 @@ class SnakeGame extends SurfaceView implements Runnable{
                 //Detect if button is clicked
                 if (pauseButton.contains(x, y)) {
                    mPaused = !mPaused;
+                   if (mPaused) {
+                       soundManager.pauseBackgroundMusic();
+                   } else {
+                       soundManager.playBackgroundMusic();
+                   }
                    return true;
                 }
                 if (mPaused) {
@@ -369,8 +374,9 @@ class SnakeGame extends SurfaceView implements Runnable{
                     if (isNewGame) {
                         newGame();
                         isNewGame = false;
+                        soundManager.playBackgroundMusic();
+                        return true;
                     }
-                    return true;
                 }
 
                 mSnake.switchHeading(motionEvent);
@@ -382,6 +388,7 @@ class SnakeGame extends SurfaceView implements Runnable{
     // Stop the thread
     public void pause() {
         mPlaying = false;
+        soundManager.pauseBackgroundMusic();
         try {
             mThread.join();
         } catch (InterruptedException e) {
@@ -392,7 +399,13 @@ class SnakeGame extends SurfaceView implements Runnable{
     // Start the thread
     public void resume() {
         mPlaying = true;
-        mThread = new Thread(this);
-        mThread.start();
+        // Only play music if the game is not paused and not a new game
+        if (!mPaused && !isNewGame) {
+            soundManager.playBackgroundMusic();
+        }
+        if (mThread == null) {
+            mThread = new Thread(this);
+            mThread.start();
+        }
     }
 }
