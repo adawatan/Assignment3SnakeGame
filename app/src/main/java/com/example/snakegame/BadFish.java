@@ -4,9 +4,9 @@ import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
 
-class BadApple extends Consumable {
+class BadFish extends Consumable {
 
-    public BadApple(Context context, Point spawnRange, int size, SoundManager soundManager) {
+    public BadFish(Context context, Point spawnRange, int size, SoundManager soundManager) {
         super(context, spawnRange, size, -1,soundManager);
 
     }
