@@ -206,7 +206,7 @@ class SnakeGame extends SurfaceView implements Runnable{
                 consumable.playSound();
                 toRemove.add(consumable);
 
-                if (consumable instanceof BadApple) {
+                if (consumable instanceof BadFish) {
                     if (!mSnake.isGolden()) {
                         mSnake.shrink();
                         mScore += consumable.value;
@@ -217,8 +217,8 @@ class SnakeGame extends SurfaceView implements Runnable{
                     adjustSnakeSize(consumable.value);
                     hasApple = false;
                     consumedApple = true;
-                } else if (consumable instanceof GoldenApple) {
-                    ((GoldenApple) consumable).activateEffects(mSnake);
+                } else if (consumable instanceof GoldenFish) {
+                    ((GoldenFish) consumable).activateEffects(mSnake);
                     hasGoldenApple = false;
                 }
             }
@@ -266,7 +266,7 @@ class SnakeGame extends SurfaceView implements Runnable{
             hasApple = true;
         }
 
-        BadApple badApple = new BadApple(getContext(), new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), blockSize, soundManager);
+        BadFish badApple = new BadFish(getContext(), new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), blockSize, soundManager);
         badApple.spawn();
         consumables.add(badApple);
     }
@@ -275,7 +275,7 @@ class SnakeGame extends SurfaceView implements Runnable{
         Handler mainHandler = new Handler(Looper.getMainLooper());
         mainHandler.postDelayed(() -> {
             if (mPlaying && !mPaused && !hasGoldenApple) {
-                GoldenApple goldenApple = new GoldenApple(getContext(), new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), blockSize, soundManager);
+                GoldenFish goldenApple = new GoldenFish(getContext(), new Point(NUM_BLOCKS_WIDE, mNumBlocksHigh), blockSize, soundManager);
                 goldenApple.spawn();
                 consumables.add(goldenApple);
                 hasGoldenApple = true;
