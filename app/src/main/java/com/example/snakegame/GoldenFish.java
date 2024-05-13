@@ -6,8 +6,8 @@ import android.graphics.Point;
 import android.os.Handler;
 import android.os.Looper;
 
-class GoldenApple extends Consumable {
-    public GoldenApple(Context context, Point spawnRange, int size, SoundManager soundManager) {
+class GoldenFish extends Consumable {
+    public GoldenFish(Context context, Point spawnRange, int size, SoundManager soundManager) {
         super(context, spawnRange, size, 2, soundManager);
     }
 
