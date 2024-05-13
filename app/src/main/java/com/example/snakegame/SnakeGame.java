@@ -44,6 +44,7 @@ class SnakeGame extends SurfaceView implements Runnable{
     private Paint mPaint;
     private Bitmap mBackground;
     private Typeface mCustomFont;
+    private HighScoreManager highScoreManager;
 
     // A snake ssss
     private Snake mSnake;
@@ -76,6 +77,7 @@ class SnakeGame extends SurfaceView implements Runnable{
         //initialize text font
         initializeTextFont(context);
         initializeObstacles(context);
+        highScoreManager = new HighScoreManager(context);
     }
 
     //Initialize methods
@@ -214,11 +216,15 @@ class SnakeGame extends SurfaceView implements Runnable{
                     }
                 } else if (consumable instanceof Apple) {
                     mScore += consumable.value;
+                    if(highScoreManager.getHighScore() < mScore){
+                        highScoreManager.saveHighScore(mScore);
+                    }
                     adjustSnakeSize(consumable.value);
                     hasApple = false;
                     consumedApple = true;
                 } else if (consumable instanceof GoldenApple) {
                     ((GoldenApple) consumable).activateEffects(mSnake);
+                    obstacles.clear();
                     hasGoldenApple = false;
                 }
             }
@@ -300,6 +306,19 @@ class SnakeGame extends SurfaceView implements Runnable{
             drawGameObjects(mCanvas);
             // Draw some text while paused
             drawPauseMessage(mCanvas);
+
+
+            // Set the color and font size for the paint
+            Paint hpaint = new Paint();
+            hpaint.setColor(Color.WHITE);
+            hpaint.setTextSize(40);
+
+            // Draw the current high score
+            int highScore = highScoreManager.getHighScore();
+            mCanvas.drawText("High Score: " + highScore, 10, 50, hpaint);
+
+
+
             // Unlock the mCanvas and reveal the graphics for this frame
             mSurfaceHolder.unlockCanvasAndPost(mCanvas);
         }
